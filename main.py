@@ -16,12 +16,17 @@ ENTRY = (
 )
 
 
+def validate(entry: str) -> None:
+    """Self-check gate: fail loudly if the entry is invalid."""
+    assert entry, "entry must not be empty"
+    assert entry.strip(), "entry must not be blank"
+    assert "\n" not in entry, "entry must be a single line"
+    assert 1 <= len(entry) <= 200, f"entry must be 1-200 chars, got {len(entry)}"
+    entry.encode("utf-8")  # must be valid UTF-8 text
+
+
 def main() -> int:
-    # Self-check gate: fail loudly if the entry is invalid.
-    assert ENTRY, "entry must not be empty"
-    assert ENTRY.strip(), "entry must not be blank"
-    assert "\n" not in ENTRY, "entry must be a single line"
-    assert 1 <= len(ENTRY) <= 200, f"entry must be 1-200 chars, got {len(ENTRY)}"
+    validate(ENTRY)
 
     out_dir = os.environ.get("ENTRY_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
@@ -29,7 +34,11 @@ def main() -> int:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(ENTRY + "\n")
 
+    # Verify the write: read it back and confirm it matches exactly.
+    with open(out_path, "r", encoding="utf-8") as f:
+        assert f.read() == ENTRY + "\n", "written entry does not match ENTRY"
     print(ENTRY)
+    print(f"chars: {len(ENTRY)}")
     return 0
 
 
